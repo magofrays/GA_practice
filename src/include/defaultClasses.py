@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 import csv  # для дальнейшего чтения исходных данных
 import random  # для дальнейшего чтения исходных данных
-
+from typing import List
 
 @dataclass
 class Task:
@@ -34,3 +34,22 @@ class ParamGeneticAlgorithm:  # параметры ГА
         if self.num_individuals < 2 or self.num_generations < 1:
             raise ValueError("Неверные параметры популяции или поколений.")
 
+
+class ScheduleInfo:  # класс, представляющий конкретную особь (последовательность задач)
+    def __init__(self, order: List[int], tasks: List[Task]):
+        self.order = order.copy()  # копируем последовательность индексов задач
+        self.tasks = tasks  # ссылка на список задач
+        self.tardiness = self._calculate_tardiness()  # общая задержка
+
+    def _calculate_tardiness(self) -> int:  # целевая функция - общая задержка
+        # (можно поменять и добавить возможность вычисления каждой отдельной задержки)
+        current_time = 0
+        total_tardiness = 0
+        for idx in self.order:
+            task = self.tasks[idx]
+            current_time += task.time
+            total_tardiness += max(0, current_time - task.deadline)
+        return total_tardiness
+
+    def copy(self):
+        return ScheduleInfo(self.order, self.tasks)
