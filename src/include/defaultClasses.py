@@ -62,9 +62,10 @@ class ScheduleInfo:  # класс, представляющий конкретн
 @dataclass
 class GenerationState:  # состояние одного поколения
     population: List[ScheduleInfo]     # список всех особей
-
+    is_selection: bool # является ли скрещиванием
     best: ScheduleInfo = field(init=False)
     average_tardiness: float = field(init=False)
+
     
     id: int = field(init=False)
     _next_id: int = field(default=0, init=False, repr=False)
