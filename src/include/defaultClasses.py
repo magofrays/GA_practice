@@ -61,14 +61,16 @@ class ScheduleInfo:  # класс, представляющий конкретн
 
 @dataclass
 class GenerationState:  # состояние одного поколения
-    index: int                         # номер поколения
     population: List[ScheduleInfo]     # список всех особей
 
     best: ScheduleInfo = field(init=False)
     average_tardiness: float = field(init=False)
-
+    
+    id: int = field(init=False)
+    _next_id: int = field(default=0, init=False, repr=False)
     def __post_init__(self):
         self.best = min(self.population, key=lambda s: s.tardiness)  # лучшая особь по минимальной задержке
-
         total = sum(s.tardiness for s in self.population)
         self.average_tardiness = total / len(self.population)  # средняя задержка по популяции
+        self.id = GenerationState._next_id
+        GenerationState._next_id += 1
