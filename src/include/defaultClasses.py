@@ -8,31 +8,28 @@ from typing import List
 class Task:
     time: int  # время выполнения задачи
     deadline: int  # дедлайн задачи
-
+    id : int
     def __post_init__(self):
         if self.time < 0 or self.deadline < 0:
             raise ValueError("Число времени и дедлайна должно быть неотрицательным.")
 
 
 @dataclass
-class ParamProbability:  # параметры вероятности
-    crossover: float  # вероятность скрещивания
-    mutation: float  # вероятность мутации
-
-    def __post_init__(self):
-        if not (0 <= self.crossover <= 1 and 0 <= self.mutation <= 1):
-            raise ValueError("Параметры вероятностей должны быть в [0, 1].")
-
-
-@dataclass
 class ParamGeneticAlgorithm:  # параметры ГА
-    probability: ParamProbability
-    num_individuals: int  # размер популяции
-    num_generations: int  # количество поколений
+    crossover: float = 0.5          # Вероятность скрещивания (0-1)
+    mutation: float = 0.5           # Вероятность мутации (0-1)
+    num_individuals: int = 150      # Размер популяции (≥2)
+    num_generations: int = 100      # Количество поколений (≥1)
 
     def __post_init__(self):
+        self._validate()
+
+    def _validate(self):
+        """Проверка корректности значений."""
         if self.num_individuals < 2 or self.num_generations < 1:
-            raise ValueError("Неверные параметры популяции или поколений.")
+            raise ValueError("Популяция должна быть ≥2, поколения ≥1.")
+        if not (0 <= self.crossover <= 1 and 0 <= self.mutation <= 1):
+            raise ValueError("Вероятности должны быть в диапазоне [0, 1].")
 
 
 class ScheduleInfo:  # класс, представляющий конкретную особь (последовательность задач)
