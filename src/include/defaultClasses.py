@@ -59,9 +59,10 @@ class ScheduleInfo:  # класс, представляющий конкретн
         return ScheduleInfo(self.order, self.tasks)
 
 class State:
-    CROSSBREEDING = 0
-    SELECTION = 1
+    SELECTION = 0
+    CROSSBREEDING = 1
     MUTATION = 2    
+    INIT = 4
 
 @dataclass
 class GenerationState:  # состояние одного поколения
