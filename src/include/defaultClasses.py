@@ -4,15 +4,18 @@ import csv  # для дальнейшего чтения исходных дан
 import random  # для дальнейшего чтения исходных данных
 from typing import List
 
-@dataclass
 class Task:
-    time: int  # время выполнения задачи
-    deadline: int  # дедлайн задачи
-    id : int
-    def __post_init__(self):
+    _next_id = 0
+    def __init__(self, time, deadline):
+        self.time = time
+        self.deadline = deadline
+        self.id = Task._next_id
+        Task._next_id += 1
+        self._validate()
+
+    def _validate(self):
         if self.time < 0 or self.deadline < 0:
             raise ValueError("Число времени и дедлайна должно быть неотрицательным.")
-
 
 @dataclass
 class ParamGeneticAlgorithm:  # параметры ГА
