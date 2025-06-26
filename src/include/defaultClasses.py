@@ -1,16 +1,14 @@
 from dataclasses import dataclass
-
-import csv  # для дальнейшего чтения исходных данных
-import random  # для дальнейшего чтения исходных данных
+import csv  # для дальнейшего чтения исходных данных 
 from typing import List
 
 class Task:
-    _next_id = 0
-    def __init__(self, time, deadline):
+    _next_id = 0 # статическая переменная
+    def __init__(self, time : int, deadline : int):
         self.time = time
         self.deadline = deadline
-        self.id = Task._next_id
-        Task._next_id += 1
+        self.id = Task._next_id # у каждого таска свой id
+        Task._next_id += 1 
         self._validate()
 
     def _validate(self):
