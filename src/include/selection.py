@@ -1,4 +1,4 @@
-from defaultClasses import ScheduleInfo
+from defaultClasses import ScheduleInfo, GenerationState, State
 from abc import ABC, abstractmethod
 from typing import List
 import random
@@ -9,37 +9,38 @@ class SelectionStrategy(ABC):
     def select(self,
                population: List[ScheduleInfo],
                num_to_select: int
-               ) -> List[ScheduleInfo]:
+               ) -> GenerationState:
         """
-        Выбираем из популяции num_to_select особей для скрещивания
+        Выбираем из популяции num_to_select особей для скрещивания.
         """
 
 
 class TournamentSelection(SelectionStrategy):
-    def select(self, population: List[ScheduleInfo], k: int) -> List[ScheduleInfo]:
+    def select(self, population: List[ScheduleInfo], k: int) -> GenerationState:
         selected = []
         for _ in range(k):
             a, b = random.sample(population, 2)
             winner = a if a.tardiness <= b.tardiness else b
             selected.append(winner.copy())
-        return selected
+        return GenerationState(selected, State.SELECTION)
 
 
 class RankSelection(SelectionStrategy):
-    def select(self, population: List[ScheduleInfo], k: int) -> List[ScheduleInfo]:
+    def select(self, population: List[ScheduleInfo], k: int) -> GenerationState:
         sorted_pop = sorted(population, key=lambda s: s.tardiness)
         N = len(sorted_pop)
         weights = [N - i for i in range(N)]
         chosen = random.choices(sorted_pop, weights=weights, k=k)
-        return [ind.copy() for ind in chosen]
+        selected = [ind.copy() for ind in chosen]
+        return GenerationState(selected, State.SELECTION)
 
 
 class StochasticUniversalSampling(SelectionStrategy):
-    def select(self, population: List[ScheduleInfo], k: int) -> List[ScheduleInfo]:
+    def select(self, population: List[ScheduleInfo], k: int) -> GenerationState:
         epsilon = 1e-6
-        tardinesses = [1 / (ind.tardiness + epsilon) for ind in population]
-        total_f = sum(tardinesses)
-        probs = [f / total_f for f in tardinesses]
+        fitnesses = [1 / (ind.tardiness + epsilon) for ind in population]
+        total_f = sum(fitnesses)
+        probs = [f / total_f for f in fitnesses]
         cum = []
         csum = 0.0
         for p in probs:
@@ -53,4 +54,4 @@ class StochasticUniversalSampling(SelectionStrategy):
             while cum[idx] < ptr:
                 idx += 1
             selected.append(population[idx].copy())
-        return selected
+        return GenerationState(selected, State.SELECTION)
