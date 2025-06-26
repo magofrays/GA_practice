@@ -1,4 +1,4 @@
-from defaultClasses import Task
+from include.defaultClasses import Task
 import sys
 
 class tuiParser:
