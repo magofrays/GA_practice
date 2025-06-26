@@ -1,19 +1,25 @@
-from dataclasses import dataclass
-import csv  # для дальнейшего чтения исходных данных 
+from dataclasses import dataclass, field
+
+import csv  # для дальнейшего чтения исходных данных
+import random  # для дальнейшего чтения исходных данных
 from typing import List
 
+@dataclass
 class Task:
-    _next_id = 0 # статическая переменная
-    def __init__(self, time : int, deadline : int):
-        self.time = time
-        self.deadline = deadline
-        self.id = Task._next_id # у каждого таска свой id
-        Task._next_id += 1 
+    time: int
+    deadline: int
+    id: int = field(init=False)
+    _next_id: int = field(default=0, init=False, repr=False)
+
+    def __post_init__(self):
+        self.id = Task._next_id
+        Task._next_id += 1
         self._validate()
 
     def _validate(self):
         if self.time < 0 or self.deadline < 0:
             raise ValueError("Число времени и дедлайна должно быть неотрицательным.")
+
 
 @dataclass
 class ParamGeneticAlgorithm:  # параметры ГА
@@ -51,3 +57,18 @@ class ScheduleInfo:  # класс, представляющий конкретн
 
     def copy(self):
         return ScheduleInfo(self.order, self.tasks)
+
+
+@dataclass
+class GenerationState:  # состояние одного поколения
+    index: int                         # номер поколения
+    population: List[ScheduleInfo]     # список всех особей
+
+    best: ScheduleInfo = field(init=False)
+    average_tardiness: float = field(init=False)
+
+    def __post_init__(self):
+        self.best = min(self.population, key=lambda s: s.tardiness)  # лучшая особь по минимальной задержке
+
+        total = sum(s.tardiness for s in self.population)
+        self.average_tardiness = total / len(self.population)  # средняя задержка по популяции
