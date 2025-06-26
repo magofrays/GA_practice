@@ -58,11 +58,15 @@ class ScheduleInfo:  # класс, представляющий конкретн
     def copy(self):
         return ScheduleInfo(self.order, self.tasks)
 
+class State:
+    CROSSBREEDING = 0
+    SELECTION = 1
+    MUTATION = 2    
 
 @dataclass
 class GenerationState:  # состояние одного поколения
     population: List[ScheduleInfo]     # список всех особей
-    is_selection: bool # является ли скрещиванием
+    state: State # является ли скрещиванием
     best: ScheduleInfo = field(init=False)
     average_tardiness: float = field(init=False)
 
