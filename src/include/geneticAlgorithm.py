@@ -70,4 +70,7 @@ class geneticAlgorithm:
             self.do_next()
     
         for i in range(self.iteration, self.params.num_generations):
-            self.do_next()
+            self.do_selection()
+            self.do_crossbreeding()
+            self.do_mutation()
+            
