@@ -1,23 +1,22 @@
-from defaultClasses import ParamGeneticAlgorithm, ScheduleInfo, GenerationState, State
-from tuiParser import tuiParser
+from defaultClasses import ParamGeneticAlgorithm, ScheduleInfo, GenerationState, State, Task
 from crossbreeding import CrossbreedingStrategy, SinglePointCrossbreeding
 from mutation import MutationStrategy, NoMutation
 from selection import SelectionStrategy, TournamentSelection
 import random
+from typing import List
 
 class geneticAlgorithm:
     def __init__(self):
         self.params = ParamGeneticAlgorithm()
-        self.parser = tuiParser()
         self.iteration = 0 # generation_id
         self.selection : SelectionStrategy = TournamentSelection() # класс для отбора
         self.crossbreeding : CrossbreedingStrategy = SinglePointCrossbreeding()# класс для скрещиваний
         self.mutation : MutationStrategy = NoMutation()
-        self.generationState = None # текущее поколение и его статус
+        self.generationState = None 
         self.history = []
     
-    def read_tasks(self):
-        self.tasks = self.parser.get_tasks()
+    def get_tasks(self, tasks : List[Task]):
+        self.tasks = tasks
     
     def change_params(self, crossover, mutation, num_individuals, num_generations):
         self.params.crossover= crossover
