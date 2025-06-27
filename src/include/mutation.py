@@ -7,7 +7,7 @@ import random
 class MutationStrategy(ABC):
     @abstractmethod
     def mutate(self,
-               offspring: List[ScheduleInfo],
+               state: GenerationState,
                mutation_rate: float
                ) -> GenerationState:
         """
@@ -16,17 +16,18 @@ class MutationStrategy(ABC):
 
 
 class NoMutation(MutationStrategy):
-    def mutate(self, offspring: List[ScheduleInfo], rate: float) -> GenerationState:
-        new_pop = [ind.copy() for ind in offspring]
+    def mutate(self, state: GenerationState, mutation_rate: float) -> GenerationState:
+        new_pop = [ind.copy() for ind in state.population]
         return GenerationState(population=new_pop, state=State.MUTATION)
+
 
 # обмен двух генов
 class SwapMutation(MutationStrategy):
-    def mutate(self, offspring: List[ScheduleInfo], rate: float) -> GenerationState:
+    def mutate(self, state: GenerationState, mutation_rate: float) -> GenerationState:
         mutated: List[ScheduleInfo] = []
-        for ind in offspring:
+        for ind in state.population:
             chrom = ind.order.copy()
-            if random.random() < rate:
+            if random.random() < mutation_rate:
                 i, j = random.sample(range(len(chrom)), 2)
                 chrom[i], chrom[j] = chrom[j], chrom[i]
             mutated.append(ScheduleInfo(chrom, ind.tasks))
@@ -35,12 +36,12 @@ class SwapMutation(MutationStrategy):
 
 # инверсия случайного участка
 class InversionMutation(MutationStrategy):
-    def mutate(self, offspring: List[ScheduleInfo], rate: float) -> GenerationState:
+    def mutate(self, state: GenerationState, mutation_rate: float) -> GenerationState:
         mutated: List[ScheduleInfo] = []
-        for ind in offspring:
+        for ind in state.population:
             chrom = ind.order.copy()
-            if random.random() < rate:
+            if random.random() < mutation_rate:
                 i, j = sorted(random.sample(range(len(chrom)), 2))
-                chrom[i:j+1] = list(reversed(chrom[i:j+1]))
+                chrom[i:j + 1] = list(reversed(chrom[i:j + 1]))
             mutated.append(ScheduleInfo(chrom, ind.tasks))
         return GenerationState(population=mutated, state=State.MUTATION)
