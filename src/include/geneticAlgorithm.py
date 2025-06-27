@@ -1,8 +1,8 @@
-from src.include.defaultClasses import ParamGeneticAlgorithm, ScheduleInfo, GenerationState, State
-from src.include.tuiParser import tuiParser
-from src.include.crossbreeding import CrossbreedingStrategy, SinglePointCrossbreeding
-from src.include.mutation import MutationStrategy, NoMutation
-from src.include.selection import SelectionStrategy, TournamentSelection
+from defaultClasses import ParamGeneticAlgorithm, ScheduleInfo, GenerationState, State
+from tuiParser import tuiParser
+from crossbreeding import CrossbreedingStrategy, SinglePointCrossbreeding
+from mutation import MutationStrategy, NoMutation
+from selection import SelectionStrategy, TournamentSelection
 import random
 
 class geneticAlgorithm:
