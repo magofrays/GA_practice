@@ -1,5 +1,8 @@
 from src.include.defaultClasses import ParamGeneticAlgorithm, ScheduleInfo, GenerationState, State
 from src.include.tuiParser import tuiParser
+from src.include.crossbreeding import CrossbreedingStrategy, SinglePointCrossbreeding
+from src.include.mutation import MutationStrategy, NoMutation
+from src.include.selection import SelectionStrategy, TournamentSelection
 import random
 
 class geneticAlgorithm:
@@ -7,9 +10,9 @@ class geneticAlgorithm:
         self.params = ParamGeneticAlgorithm()
         self.parser = tuiParser()
         self.iteration = 0 # generation_id
-        self.selection = None # класс для отбора
-        self.crossbreeding = None # класс для скрещиваний
-        self.mutation = None
+        self.selection : SelectionStrategy = TournamentSelection() # класс для отбора
+        self.crossbreeding : CrossbreedingStrategy = SinglePointCrossbreeding()# класс для скрещиваний
+        self.mutation : MutationStrategy = NoMutation()
         self.generationState = None # текущее поколение и его статус
         self.history = []
     
@@ -29,7 +32,7 @@ class geneticAlgorithm:
             order = [j for j in range(len(self.tasks))]
             random.shuffle(order)
             population.append(ScheduleInfo(order, self.tasks))
-        self.generationState = GenerationState(population, State.INIT)
+        self.generationState = GenerationState(population, state=State.INIT)
     
     def change_selection(self, new_selection):
         self.selection = new_selection
@@ -39,7 +42,7 @@ class geneticAlgorithm:
     
     def do_selection(self):
         self.history.append(GenerationState)
-        self.generationState = self.selection.do_selection()
+        self.generationState = self.selection.select()
         
     def do_crossbreeding(self):
         self.history.append(self.generationState)
