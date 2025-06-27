@@ -27,7 +27,7 @@ class ParamGeneticAlgorithm:  # параметры ГА
     mutation: float = 0.5           # Вероятность мутации (0-1)
     num_individuals: int = 150      # Размер популяции (≥2)
     num_generations: int = 100      # Количество поколений (≥1)
-
+    num_to_select : int = 50
     def __post_init__(self):
         self._validate()
 
@@ -37,6 +37,8 @@ class ParamGeneticAlgorithm:  # параметры ГА
             raise ValueError("Популяция должна быть ≥2, поколения ≥1.")
         if not (0 <= self.crossover <= 1 and 0 <= self.mutation <= 1):
             raise ValueError("Вероятности должны быть в диапазоне [0, 1].")
+        if self.num_to_select < 2:
+            raise ValueError("Отбираться должно больше 1 особи!")
 
 
 class ScheduleInfo:  # класс, представляющий конкретную особь (последовательность задач)

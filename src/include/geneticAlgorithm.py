@@ -42,15 +42,15 @@ class geneticAlgorithm:
     
     def do_selection(self):
         self.history.append(GenerationState)
-        self.generationState = self.selection.select()
+        self.generationState = self.selection.select(self.generationState, self.params.num_to_select)
         
     def do_crossbreeding(self):
         self.history.append(self.generationState)
-        self.generationState = self.crossbreeding.do_crossbreading()
+        self.generationState = self.crossbreeding.crossbreed(self.generationState, self.params.num_individuals, self.params.crossover)
     
     def do_mutation(self):
         self.history.append(GenerationState)
-        self.generationState = self.mutation.do_mutation()
+        self.generationState = self.mutation.mutate(self.generationState, self.params.mutation)
         self.iteration += 1
 
     def do_next(self):
