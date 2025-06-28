@@ -3,13 +3,11 @@ from defaultClasses import ParamGeneticAlgorithm, ScheduleInfo, GenerationState,
 from selection import SelectionStrategy, TournamentSelection
 from crossbreeding import CrossbreedingStrategy, OrderCrossbreeding
 from mutation import MutationStrategy, NoMutation, SwapMutation
-from parser import RandomParser, Parser
 
 
 class geneticAlgorithm:
     def __init__(self):
         self.params = ParamGeneticAlgorithm()
-        self.parser = RandomParser()  # по стандарту рандом
         self.iteration = 0  # id популяции
         self.selection: SelectionStrategy = TournamentSelection()  # по стандарту турнир
         self.crossbreeding: CrossbreedingStrategy = OrderCrossbreeding()
@@ -17,8 +15,6 @@ class geneticAlgorithm:
         self.generationState: GenerationState = None
         self.history: list[GenerationState] = []
 
-    def read_tasks(self, src):
-        self.tasks = self.parser.get_tasks(src)
 
     def change_params(self, crossover: float, mutation: float, num_individuals: int, num_generations: int):
         self.params.crossover = crossover
@@ -34,9 +30,6 @@ class geneticAlgorithm:
             random.shuffle(order)
             population.append(ScheduleInfo(order, self.tasks))
         self.generationState = GenerationState(population, State.INIT)
-
-    def change_parser(self, new_parser):
-        self.parser = new_parser
 
     def change_selection(self, new_selection):
         self.selection = new_selection
