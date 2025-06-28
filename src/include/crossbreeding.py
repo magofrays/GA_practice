@@ -17,123 +17,42 @@ class CrossbreedingStrategy(ABC):
         """
 
 
-# Одноточечное скрещивание
-class SinglePointCrossbreeding(CrossbreedingStrategy):
+class OrderCrossbreeding(CrossbreedingStrategy):
     def crossbreed(self, state: GenerationState, num_to_produce: int, rate: float) -> GenerationState:
-        selected = state.population
-        k = len(selected)
-        n = len(selected[0].order)
-        offspring: List[ScheduleInfo] = []
-        parents = selected.copy()
+        parents = state.population.copy()
         random.shuffle(parents)
+        n = len(parents[0].order)
+        offspring: List[ScheduleInfo] = []
 
-        for i in range(0, k, 2):
+        for i in range(0, len(parents), 2):
             if len(offspring) >= num_to_produce:
                 break
-            p1, p2 = parents[i], parents[(i + 1) % k]
+            p1, p2 = parents[i], parents[(i + 1) % len(parents)]
             if random.random() < rate:
-                cut = random.randrange(1, n)
-                c1 = p1.order[:cut] + p2.order[cut:]
-                c2 = p2.order[:cut] + p1.order[cut:]
+                # генерируем двух потомков
+                for a, b in [(p1.order, p2.order), (p2.order, p1.order)]:
+                    child = [-1] * n
+                    i1, i2 = sorted(random.sample(range(n), 2))
+                    # копируем отрезок
+                    child[i1:i2 + 1] = a[i1:i2 + 1]
+                    pos = (i2 + 1) % n
+                    # заполняем остаток генами из b
+                    for gene in b[i2 + 1:] + b[:i2 + 1]:
+                        if gene not in child:
+                            child[pos] = gene
+                            pos = (pos + 1) % n
+                    offspring.append(ScheduleInfo(child, p1.tasks))
+                    if len(offspring) >= num_to_produce:
+                        break
             else:
-                c1, c2 = p1.order.copy(), p2.order.copy()
+                # копируем без изменений
+                offspring.append(p1.copy())
+                if len(offspring) < num_to_produce:
+                    offspring.append(p2.copy())
 
-            offspring.append(ScheduleInfo(c1, p1.tasks))
-            if len(offspring) < num_to_produce:
-                offspring.append(ScheduleInfo(c2, p1.tasks))
-
-        # если не хватило, дополняем копиями родителей
+        # досоздаем, если не хватило
         while len(offspring) < num_to_produce:
-            parent = random.choice(selected)
-            offspring.append(parent.copy())
-
-        return GenerationState(population=offspring[:num_to_produce],
-                               state=State.CROSSBREEDING)
-
-
-# Равномерное скрещивание
-class UniformCrossbreeding(CrossbreedingStrategy):
-    # С равной вероятностью берем ген из первого родителя,
-    # иначе из второго.
-
-    def crossbreed(self, state: GenerationState, num_to_produce: int, rate: float) -> GenerationState:
-        selected = state.population
-        k = len(selected)
-        offspring: List[ScheduleInfo] = []
-        parents = selected.copy()
-        random.shuffle(parents)
-
-        for i in range(0, k, 2):
-            if len(offspring) >= num_to_produce:
-                break
-            p1, p2 = parents[i], parents[(i + 1) % k]
-            if random.random() < rate:
-                c1, c2 = [], []
-                for g1, g2 in zip(p1.order, p2.order):
-                    if random.random() < 0.5:
-                        c1.append(g1)
-                        c2.append(g2)
-                    else:
-                        c1.append(g2)
-                        c2.append(g1)
-            else:
-                c1, c2 = p1.order.copy(), p2.order.copy()
-
-            offspring.append(ScheduleInfo(c1, p1.tasks))
-            if len(offspring) < num_to_produce:
-                offspring.append(ScheduleInfo(c2, p1.tasks))
-
-        while len(offspring) < num_to_produce:
-            parent = random.choice(selected)
-            offspring.append(parent.copy())
-
-        return GenerationState(population=offspring[:num_to_produce],
-                               state=State.CROSSBREEDING)
-
-
-# Имитация двоичного скрещивания
-class SimulatedBinaryCrossbreeding(CrossbreedingStrategy):
-    # offspring1[i] = 0.5*((1+β)*p1 + (1-β)*p2)
-    # offspring2[i] = 0.5*((1-β)*p1 + (1+β)*p2)
-
-    def __init__(self, eta: float):
-        if eta <= 0:
-            raise ValueError("Эта должна быть > 0")
-        self.eta = eta
-
-    def crossbreed(self, state: GenerationState, num_to_produce: int, rate: float) -> GenerationState:
-        selected = state.population
-        k = len(selected)
-        offspring: List[ScheduleInfo] = []
-        parents = selected.copy()
-        random.shuffle(parents)
-
-        for i in range(0, k, 2):
-            if len(offspring) >= num_to_produce:
-                break
-            p1, p2 = parents[i], parents[(i + 1) % k]
-            if random.random() < rate:
-                c1, c2 = [], []
-                for x, y in zip(p1.order, p2.order):
-                    u = random.random()
-                    if u <= 0.5:
-                        beta = (2 * u) ** (1.0 / (self.eta + 1))
-                    else:
-                        beta = (1.0 / (2 * (1 - u))) ** (1.0 / (self.eta + 1))
-                    val1 = 0.5 * ((1 + beta) * x + (1 - beta) * y)
-                    val2 = 0.5 * ((1 - beta) * x + (1 + beta) * y)
-                    c1.append(val1)
-                    c2.append(val2)
-            else:
-                c1, c2 = p1.order.copy(), p2.order.copy()
-
-            offspring.append(ScheduleInfo(c1, p1.tasks))
-            if len(offspring) < num_to_produce:
-                offspring.append(ScheduleInfo(c2, p1.tasks))
-
-        while len(offspring) < num_to_produce:
-            parent = random.choice(selected)
-            offspring.append(parent.copy())
+            offspring.append(random.choice(state.population).copy())
 
         return GenerationState(population=offspring[:num_to_produce],
                                state=State.CROSSBREEDING)
