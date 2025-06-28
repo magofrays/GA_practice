@@ -3,11 +3,11 @@ from geneticAlgorithm import geneticAlgorithm
 import tkinter as tk
 from tkinter import ttk
 from startState import StartState
-
+from parser import Parser, RandomParser
 class App:
     def __init__(self):
         self.root = tk.Tk()
-        self.parser = None
+        self.parser = Parser()
         self.state = StartState(self.root, self)
         self.genAlgorithm = geneticAlgorithm()
         self.visual_settings()

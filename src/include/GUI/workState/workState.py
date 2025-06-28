@@ -42,11 +42,11 @@ class WorkState:
         
     
     def go_back(self):
-        pass
+        self.app.genAlgorithm.go_back()
     
     def do_next(self):
-        pass
+        self.app.genAlgorithm.do_next()
     
     def finish(self):
-        pass
+        self.app.genAlgorithm.finish()
 

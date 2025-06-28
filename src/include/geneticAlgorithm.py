@@ -1,5 +1,5 @@
 from defaultClasses import ParamGeneticAlgorithm, ScheduleInfo, GenerationState, State, Task
-from crossbreeding import CrossbreedingStrategy, SinglePointCrossbreeding, OrderCrossbreeding
+from crossbreeding import CrossbreedingStrategy, OrderCrossbreeding
 from mutation import MutationStrategy, NoMutation, SwapMutation
 from selection import SelectionStrategy, TournamentSelection
 import random
@@ -15,7 +15,9 @@ class geneticAlgorithm:
         self.generationState: GenerationState = None
         self.history: list[GenerationState] = []
 
-
+    def set_tasks(self, tasks):
+        self.tasks = tasks
+    
     def change_params(self, crossover: float, mutation: float, num_individuals: int, num_generations: int):
         self.params.crossover = crossover
         self.params.mutation = mutation

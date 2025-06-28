@@ -2,9 +2,10 @@ import tkinter as tk
 from tkinter import ttk, filedialog, messagebox, scrolledtext
 
 class ImportFrame(ttk.Frame):
-    def __init__(self, parent, app):
+    def __init__(self, parent, app, startState):
         super().__init__(parent)
         self.app = app
+        self.startState = startState
         self.header = ttk.Label(self, text="Выбор источника данных",
                            font = ("Arial", 12, "bold"))
         self.header.pack(pady=(0, 10), anchor="center") 
@@ -34,7 +35,6 @@ class ImportFrame(ttk.Frame):
         self.notebook.add(self.file_input, text="Из файла")
 
     def select_file(self):
-        # меняем парсер
         file_types = [
             ('Текстовые файлы', '*.txt'),
             ('CSV файлы', '*.csv'),
@@ -49,6 +49,10 @@ class ImportFrame(ttk.Frame):
         if file_path:
             self.file_path_var.set(file_path)
             file_path = self.file_path_var.get()
+            tasks = self.app.parser.get_tasks(file_path)
+            self.app.genAlgorithm.set_tasks(tasks)
+            self.startState.update_graph()
+            
 
 
     def create_manual_input(self):
@@ -80,4 +84,8 @@ class ImportFrame(ttk.Frame):
         
     
     def read_input(self):
-        pass
+        info = self.text_area.get("1.0", tk.END)
+        info = info.strip()
+        tasks = self.app.parser.get_tasks(info)
+        self.app.genAlgorithm.set_tasks(tasks)
+        self.startState.update_graph()
