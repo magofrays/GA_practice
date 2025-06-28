@@ -1,14 +1,12 @@
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox, scrolledtext
-from widgets import drawTasksGUI
 
-
-class importFrame(ttk.Frame):
-    def __init__(self, parent, state):
+class ImportFrame(ttk.Frame):
+    def __init__(self, parent, app):
         super().__init__(parent)
+        self.app = app
         self.header = ttk.Label(self, text="Выбор источника данных",
                            font = ("Arial", 12, "bold"))
-        self.state = state
         self.header.pack(pady=(0, 10), anchor="center") 
         self.notebook = ttk.Notebook(self)
         self.notebook.pack(fill=tk.BOTH, expand=True)
@@ -83,43 +81,3 @@ class importFrame(ttk.Frame):
     
     def read_input(self):
         pass
-
-class settingsFrame(ttk.Frame):
-    def __init__(self, parent):
-        super().__init__(parent)
-        ttk.Label(self, text="Настройки", font=("Arial", 14)).pack(pady=10)
-        content = ttk.Frame(self)
-        content.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
-        ttk.Button(content, text="Кнопка", command=lambda: print("Настройки")).pack(pady=20)
-
-class graphContainer(ttk.Frame):
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.graph = drawTasksGUI(self, [])
-        self.graph.run()
-    
-    def update(self, tasks):
-        self.graph.update_tasks(tasks)
-
-class StartState(ttk.PanedWindow):
-    def __init__(self, root, app):
-        super().__init__(root)
-        self.app = app
-        self.create_gui()
-
-    
-    def create_gui(self):
-        self.pack(fill=tk.BOTH, expand=True)
-        self.inner_container = ttk.PanedWindow(self, orient=tk.HORIZONTAL)
-        self.inner_container.pack(fill=tk.BOTH, expand=True)
-        self.left_window = importFrame(self.inner_container, self)
-        self.right_window = settingsFrame(self.inner_container)
-        self.inner_container.add(self.left_window, weight=1)
-        self.inner_container.add(self.right_window, weight=1)
-        self.down_window = graphContainer(self)
-        self.add(self.inner_container, weight=2)  # 2/3 высоты
-        self.add(self.down_window, weight=1)      # 1/3 высоты
-    def change_parent(self, parent):
-        self.parent = parent
-
-

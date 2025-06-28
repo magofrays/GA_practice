@@ -3,6 +3,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from itertools import cycle
 import tkinter as tk
+from tkinter import ttk
 from typing import List
 
 class ScheduleInfoGUI():
@@ -45,7 +46,7 @@ class ScheduleInfoGUI():
         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
 
-class drawTasksGUI:
+class importTasksGUI:
     def __init__(self, root, tasks : List[Task]):
         self.root = root
         self.fig = Figure(figsize=(5,3), dpi=100)
