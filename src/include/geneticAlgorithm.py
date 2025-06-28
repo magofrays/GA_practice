@@ -1,6 +1,6 @@
 from defaultClasses import ParamGeneticAlgorithm, ScheduleInfo, GenerationState, State, Task
-from crossbreeding import CrossbreedingStrategy, SinglePointCrossbreeding
-from mutation import MutationStrategy, NoMutation
+from crossbreeding import CrossbreedingStrategy, SinglePointCrossbreeding, OrderCrossbreeding
+from mutation import MutationStrategy, NoMutation, SwapMutation
 from selection import SelectionStrategy, TournamentSelection
 import random
 from typing import List
@@ -8,71 +8,94 @@ from typing import List
 class geneticAlgorithm:
     def __init__(self):
         self.params = ParamGeneticAlgorithm()
-        self.iteration = 0 # generation_id
-        self.selection : SelectionStrategy = TournamentSelection() # класс для отбора
-        self.crossbreeding : CrossbreedingStrategy = SinglePointCrossbreeding()# класс для скрещиваний
-        self.mutation : MutationStrategy = NoMutation()
-        self.generationState = None 
-        self.history = []
-    
-    def get_tasks(self, tasks : List[Task]):
-        self.tasks = tasks
-    
-    def change_params(self, crossover, mutation, num_individuals, num_generations):
-        self.params.crossover= crossover
+        self.iteration = 0  # id популяции
+        self.selection: SelectionStrategy = TournamentSelection()  # по стандарту турнир
+        self.crossbreeding: CrossbreedingStrategy = OrderCrossbreeding()
+        self.mutation: MutationStrategy = SwapMutation()
+        self.generationState: GenerationState = None
+        self.history: list[GenerationState] = []
+
+
+    def change_params(self, crossover: float, mutation: float, num_individuals: int, num_generations: int):
+        self.params.crossover = crossover
         self.params.mutation = mutation
         self.params.num_individuals = num_individuals
         self.params.num_generations = num_generations
         self.params._validate()
-    
+
     def create_individuals(self):
         population = []
-        for i in range(self.params.num_individuals):
-            order = [j for j in range(len(self.tasks))]
+        for _ in range(self.params.num_individuals):
+            order = list(range(len(self.tasks)))
             random.shuffle(order)
             population.append(ScheduleInfo(order, self.tasks))
-        self.generationState = GenerationState(population, state=State.INIT)
-    
+        self.generationState = GenerationState(population, State.INIT)
+
     def change_selection(self, new_selection):
         self.selection = new_selection
-    
+
     def change_crossbreading(self, new_crossbreading):
         self.crossbreeding = new_crossbreading
-    
+
+    def change_mutation(self, new_mutation):
+        self.mutation = new_mutation
+
     def do_selection(self):
-        self.history.append(GenerationState)
-        self.generationState = self.selection.select(self.generationState, self.params.num_to_select)
-        
+        self.history.append(self.generationState)
+        self.generationState = self.selection.select(self.generationState, self.params.num_individuals)
+
     def do_crossbreeding(self):
         self.history.append(self.generationState)
-        self.generationState = self.crossbreeding.crossbreed(self.generationState, self.params.num_individuals, self.params.crossover)
-    
+        self.generationState = self.crossbreeding.crossbreed(
+            self.generationState,
+            self.params.num_individuals,
+            self.params.crossover
+        )
+
     def do_mutation(self):
-        self.history.append(GenerationState)
-        self.generationState = self.mutation.mutate(self.generationState, self.params.mutation)
+        self.history.append(self.generationState)
+        self.generationState = self.mutation.mutate(
+            self.generationState,
+            self.params.mutation
+        )
         self.iteration += 1
 
     def do_next(self):
-        if(self.generationState.state == State.INIT):
+        st = self.generationState.state
+
+        if st == State.INIT:
             self.do_selection()
-        elif (self.generationState.state == State.SELECTION):
+
+        elif st == State.SELECTION:
             self.do_crossbreeding()
-        elif (self.generationState.state == State.CROSSBREEDING):
+
+        elif st == State.CROSSBREEDING:
             self.do_mutation()
 
+        elif st == State.MUTATION:
+            # отмечаем новое поколение и сразу стартуем отбор, если надо
+            if self.iteration < self.params.num_generations:
+                self.do_selection()
+
     def go_back(self):
-        if(self.generationState.id <= 1):
-            raise ValueError("Impossible to move back!")
-        self.generationState = self.history.pop()
-        if(self.generationState.State == State.MUTATION):
+        if not self.history:
+            raise ValueError("Невозможно вернуться назад: история пуста")
+        prev = self.history.pop()
+        if prev.state == State.MUTATION:
             self.iteration -= 1
-    
+        self.generationState = prev
+
     def finish(self):
-        while(self.generationState != State.MUTATION):
+        while self.generationState.state != State.MUTATION:
             self.do_next()
-    
-        for i in range(self.iteration, self.params.num_generations):
-            self.do_selection()
-            self.do_crossbreeding()
-            self.do_mutation()
-            
+
+        while self.iteration < self.params.num_generations:
+            self.do_next()
+
+    def get_best(self) -> ScheduleInfo:
+        if not self.history:
+            return None
+
+        # Находим поколение с минимальной задержкой у лучшей особи
+        best_generation = min(self.history, key=lambda gen: gen.best.tardiness)
+        return best_generation.best
