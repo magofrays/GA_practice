@@ -3,7 +3,7 @@ import random
 from defaultClasses import Task
 
 
-class Parser:
+class CSVParser:
     """
     Парсер задач из CSV-файла.
     Ожидает файл со строками: time, deadline
@@ -26,6 +26,57 @@ class Parser:
                     continue
                 time, deadline = map(int, row[:2])
                 tasks.append(Task(time=time, deadline=deadline))
+        return tasks
+
+
+class FileParser:
+    """
+    Парсер задач из обычного файла.
+    Ожидает файл со строками: time deadline
+    Пример входных строк:
+        3 5
+        2 8
+    """
+
+    def __init__(self, file_path: str):
+        self.file_path = file_path
+
+    def get_tasks(self) -> list[Task]:
+        tasks = []
+        with open(self.file_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                parts = line.strip().split()
+                # пропускаем ненужное или невалидное
+                if len(parts) < 2:
+                    continue
+                if not parts[0].isdigit() or not parts[1].isdigit():
+                    continue
+                time, deadline = map(int, parts[:2])
+                tasks.append(Task(time=time, deadline=deadline))
+        return tasks
+
+
+class GUIParser:
+    """
+    Парсер задач из GUI.
+    Ожидает файл со строками: time deadline\n
+    Пример входных строк:
+        "3 5\n2 8\n7 4"
+    """
+
+    def __init__(self, input_string: str):
+        self.lines = input_string.strip().splitlines()
+
+    def get_tasks(self) -> list[Task]:
+        tasks = []
+        for line in self.lines:
+            parts = line.strip().split()
+            if len(parts) < 2:
+                continue
+            if not parts[0].isdigit() or not parts[1].isdigit():
+                continue
+            time, deadline = map(int, parts[:2])
+            tasks.append(Task(time=time, deadline=deadline))
         return tasks
 
 
