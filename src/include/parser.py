@@ -1,82 +1,57 @@
-import csv
+import os
+import re
 import random
 from defaultClasses import Task
 
 
-class CSVParser:
+class Parser:
     """
-    Парсер задач из CSV-файла.
-    Ожидает файл со строками: time, deadline
-    Пример входных строк:
+    Парсер задач из GUI и любого файла
+    Ожидает строки: time deadline.
+    Примеры корректных строк:
         3,5
-        2,8
-        7,4
+        4 12
+        2,  8
+        7 ,,9
+        12 ,  21
+        или
+        3 5\n4,12\n2 ,, 8\n
     """
 
-    def __init__(self, file_path: str):
-        self.file_path = file_path
+    def __init__(self, source: str):
+        self.source = source
+        self._is_file = os.path.exists(source) and os.path.isfile(source)
 
     def get_tasks(self) -> list[Task]:
+        lines = []
+        if self._is_file:
+            with open(self.source, 'r', encoding='utf-8') as f:
+                lines = f.readlines()
+        else:
+            lines = self.source.splitlines()
+
         tasks: list[Task] = []
-        with open(self.file_path, newline='', encoding='utf-8') as csvfile:
-            reader = csv.reader(csvfile)
-            for row in reader:
-                # пропускаем пустые или строку-заголовок (если там буквы)
-                if not row or any(cell.isalpha() for cell in row):
-                    continue
-                time, deadline = map(int, row[:2])
-                tasks.append(Task(time=time, deadline=deadline))
-        return tasks
+        for lineno, raw in enumerate(lines, start=1):
+            line = raw.strip()
+            if not line:
+                continue  # пустые строки игнорируем
 
+            # разбиваем по запятой/ым и/или любому количеству пробелов
+            parts = re.split(r'[,\s]+', line)
+            if len(parts) != 2:
+                raise ValueError(f"Строка {lineno}: ожидаются два числа, получено: '{line}'")
 
-class FileParser:
-    """
-    Парсер задач из обычного файла.
-    Ожидает файл со строками: time deadline
-    Пример входных строк:
-        3 5
-        2 8
-    """
+            try:
+                time = int(parts[0])
+                deadline = int(parts[1])
+            except ValueError:
+                raise ValueError(f"Строка {lineno}: неверный формат целых чисел: '{parts[0]}' или '{parts[1]}'")
 
-    def __init__(self, file_path: str):
-        self.file_path = file_path
-
-    def get_tasks(self) -> list[Task]:
-        tasks = []
-        with open(self.file_path, 'r', encoding='utf-8') as f:
-            for line in f:
-                parts = line.strip().split()
-                # пропускаем ненужное или невалидное
-                if len(parts) < 2:
-                    continue
-                if not parts[0].isdigit() or not parts[1].isdigit():
-                    continue
-                time, deadline = map(int, parts[:2])
-                tasks.append(Task(time=time, deadline=deadline))
-        return tasks
-
-
-class GUIParser:
-    """
-    Парсер задач из GUI.
-    Ожидает файл со строками: time deadline\n
-    Пример входных строк:
-        "3 5\n2 8\n7 4"
-    """
-
-    def __init__(self, input_string: str):
-        self.lines = input_string.strip().splitlines()
-
-    def get_tasks(self) -> list[Task]:
-        tasks = []
-        for line in self.lines:
-            parts = line.strip().split()
-            if len(parts) < 2:
-                continue
-            if not parts[0].isdigit() or not parts[1].isdigit():
-                continue
-            time, deadline = map(int, parts[:2])
+            # Task сам проверит неотрицательность
             tasks.append(Task(time=time, deadline=deadline))
+
+        if not tasks:
+            raise ValueError("Нет ни одной валидной строки с задачами.")
         return tasks
 
 
