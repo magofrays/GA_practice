@@ -1,5 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox, scrolledtext
+from settingsFrame import SettingLine, RangeSettingLine
+from parser import Parser, RandomParser
 
 class ImportFrame(ttk.Frame):
     def __init__(self, parent, app, startState):
@@ -47,10 +49,10 @@ class ImportFrame(ttk.Frame):
         )
         
         if file_path:
+            self.app.change_parser(Parser())
             self.file_path_var.set(file_path)
             file_path = self.file_path_var.get()
-            tasks = self.app.parser.get_tasks(file_path)
-            self.app.genAlgorithm.set_tasks(tasks)
+            tasks = self.app.add_tasks(file_path)
             self.startState.update_graph()
             
 
@@ -65,7 +67,6 @@ class ImportFrame(ttk.Frame):
             pady=10,
             height=20
         )
-        
         self.text_area.pack(fill=tk.X, anchor="n", expand=True, padx=10, pady=10)
         self.notebook.add(self.manual_input, text="Ручной ввод")
         button_frame = ttk.Frame(self.manual_input)
@@ -79,13 +80,34 @@ class ImportFrame(ttk.Frame):
     
     def create_random_input(self):
         self.random_input = ttk.Frame(self.notebook)
-        self.random_input.pack(fill=tk.BOTH, expand=True)
+        self.time_range = RangeSettingLine(self.random_input, "Длительность задачи:",(1, 100), (1, 20), int)
+        self.time_range.pack(fill=tk.BOTH, pady=5)
+        self.deadline_range = RangeSettingLine(self.random_input, "Дедлайн задачи:", (1, 100), (1, 20), int)
+        self.deadline_range.pack(fill=tk.X, pady=5)
+        self.num_tasks = SettingLine(self.random_input, "Количество задач:", 3, 100, 10, int)
+        self.num_tasks.pack(fill=tk.X, pady=5)
+        self.random_input.pack(fill=tk.BOTH, padx=10, expand=True)
         self.notebook.add(self.random_input, text="Генерация данных")
+        button_frame = ttk.Frame(self.random_input)
+        button_frame.pack(fill=tk.X, padx=10, pady=(0, 10))
+        ttk.Button(
+            button_frame, 
+            text="Готово", 
+            command=self.create_random_tasks
+        ).pack(side=tk.RIGHT, padx=5)
+        
+    def create_random_tasks(self):
+        self.app.change_parser(RandomParser())
+        self.app.add_tasks(self.num_tasks.get_value(),
+                self.time_range.get_range(),
+                self.deadline_range.get_range())
+        self.startState.update_graph()
+        
         
     
     def read_input(self):
+        self.app.change_parser(Parser())
         info = self.text_area.get("1.0", tk.END)
         info = info.strip()
-        tasks = self.app.parser.get_tasks(info)
-        self.app.genAlgorithm.set_tasks(tasks)
+        self.app.add_tasks(info)
         self.startState.update_graph()

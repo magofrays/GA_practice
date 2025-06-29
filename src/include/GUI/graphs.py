@@ -1,4 +1,4 @@
-from defaultClasses import ScheduleInfo, Task
+from defaultClasses import ScheduleInfo, Task, GenerationState
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from itertools import cycle
@@ -6,7 +6,32 @@ import tkinter as tk
 from tkinter import ttk
 from typing import List
 
-class ScheduleInfoGUI():
+class AverageTardinessGUI:
+    def __init__(self, history: List[GenerationState], root):
+        self.root = root
+        self.fig = Figure(figsize=(5, 3), dpi=100)
+        self.history = history
+        self.ax = self.fig.add_subplot(111)
+        self.ax.set_title("Расписание")
+        self.ax.grid(False)
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.root)
+        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+        self.draw_graph()
+    
+    def draw_graph(self):
+        self.ax.clear()
+        self.ax.set_title("График средних задержек")
+        self.ax.set_xlabel("Итерация")
+        self.ax.set_ylabel("Средняя задержка")
+        self.ax.grid(False)
+        x = [element.id for element in self.history]
+        y = [element.average_tardiness for element in self.history]
+        
+        self.ax.plot(x, y, 'o--', markersize=2, linewidth=1, color='b')
+        self.canvas.draw()
+
+
+class ScheduleInfoGUI:
     def __init__(self, scheduleInfo: ScheduleInfo, root):
         self.root = root
         self.fig = Figure(figsize=(5, 3), dpi=100)
@@ -14,16 +39,11 @@ class ScheduleInfoGUI():
         self.ax = self.fig.add_subplot(111)
         self.ax.set_title("Расписание")
         self.ax.grid(False)
-        
-        # Создаем canvas один раз при инициализации
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.root)
         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
-        
-        # Первоначальная отрисовка
-        self.draw()
+        self.draw_graph()
 
-    def draw(self):
-        """Отрисовывает график на существующем canvas"""
+    def draw_graph(self):
         self.ax.clear()
         self.ax.set_title("Расписание")
         self.ax.grid(False)
@@ -43,27 +63,27 @@ class ScheduleInfoGUI():
                 [curtime, curtime + tasks[i].time], 
                 [0, 0], 
                 color=color, 
-                linewidth=10
+                linewidth=4
             )
             curtime += tasks[i].time
         
         for i in self.scheduleInfo.order:
             self.ax.plot(
                 [tasks[i].deadline, tasks[i].deadline], 
-                [-0.2, 0.2 ],  
+                [-0.1, 0.1],  
                 color='red',
                 linestyle='--',
-                linewidth=2
+                linewidth=1
             )
             
             self.ax.text(
                 tasks[i].deadline, 
-                -0.3,  
-                f'Deadline: {tasks[i].id}',
+                -0.2,  
+                f'ID: {tasks[i].id}',
                 color='red',
                 ha='center',
                 va='top',
-                fontsize=8
+                fontsize=6
             )
         
         self.ax.set_ylim(-1, 1)
@@ -72,7 +92,7 @@ class ScheduleInfoGUI():
     def update_schedule(self, new_schedule):
         """Обновляет расписание и перерисовывает график"""
         self.scheduleInfo = new_schedule
-        self.draw()
+        self.draw_graph()
 
 class ImportTasksGUI:
     def __init__(self, root, tasks):
@@ -81,12 +101,8 @@ class ImportTasksGUI:
         self.tasks = tasks
         self.ax = self.fig.add_subplot(111)
         self.color_cycle = cycle(['red', 'blue', 'green', 'purple', 'orange'])
-        
-        # Создаем canvas один раз при инициализации
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.root)
         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
-        
-        # Первоначальная отрисовка
         self.draw_graph()
 
     def draw_graph(self):
@@ -116,8 +132,8 @@ class ImportTasksGUI:
                          linestyle='--',
                          linewidth=1)
             
-            self.ax.text(task.deadline, -0.1 + pos, f'Deadline: {task.id}',
-                         color='red', ha='center', va='top', fontsize=8)
+            self.ax.text(task.deadline, -0.1 + pos, f'ID: {task.id}',
+                         color='red', ha='center', va='top', fontsize=6)
             
             pos -= step
         

@@ -42,10 +42,13 @@ class ParamGeneticAlgorithm:  # параметры ГА
 
 
 class ScheduleInfo:  # класс, представляющий конкретную особь (последовательность задач)
+    _next_id = 0
     def __init__(self, order: List[int], tasks: List[Task]):
         self.order = order.copy()  # копируем последовательность индексов задач
         self.tasks = tasks  # ссылка на список задач
         self.tardiness = self._calculate_tardiness()  # общая задержка
+        self.id = ScheduleInfo._next_id
+        ScheduleInfo._next_id += 1
 
     def _calculate_tardiness(self) -> int:  # целевая функция - общая задержка
         # (можно поменять и добавить возможность вычисления каждой отдельной задержки)

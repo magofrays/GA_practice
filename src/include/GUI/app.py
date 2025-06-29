@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import ttk
 from startState import StartState
 from parser import Parser, RandomParser
+import random
 class App:
     def __init__(self):
         self.root = tk.Tk()
@@ -12,6 +13,19 @@ class App:
         self.genAlgorithm = geneticAlgorithm()
         self.visual_settings()
 
+    def change_seed(self, seed):
+        random.seed(seed)
+
+    def change_parser(self, parser):
+        self.parser = parser
+
+    def add_tasks(self, *args):
+        tasks = self.parser.get_tasks(*args)
+        self.genAlgorithm.set_tasks(tasks)
+    
+    def change_alg_params(self, *args):
+        self.genAlgorithm.change_params(*args)
+    
     def visual_settings(self):
         self.root.geometry("1200x800")
         self.root.title("Генетический алгоритм")

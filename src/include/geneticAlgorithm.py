@@ -18,11 +18,12 @@ class geneticAlgorithm:
     def set_tasks(self, tasks):
         self.tasks = tasks
     
-    def change_params(self, crossover: float, mutation: float, num_individuals: int, num_generations: int):
+    def change_params(self, crossover: float, mutation: float, num_individuals: int, num_generations: int, num_to_select : int):
         self.params.crossover = crossover
         self.params.mutation = mutation
         self.params.num_individuals = num_individuals
         self.params.num_generations = num_generations
+        self.params.num_to_select = num_to_select
         self.params._validate()
 
     def create_individuals(self):

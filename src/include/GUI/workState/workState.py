@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox, scrolledtext
-from taskFrame import TaskFrame
+from scheduleFrame import ScheduleFrame
 from graphView import GraphView
 
 class WorkState:
@@ -11,9 +11,9 @@ class WorkState:
     def run(self):
         self.main_window = ttk.PanedWindow(self.root, orient=tk.HORIZONTAL)
         self.main_window.pack(fill=tk.BOTH, expand=True)
-        self.task_frame = TaskFrame(self.main_window, self.app)
+        self.sched_frame = ScheduleFrame(self.main_window, self.app)
         self.graph_view = GraphView(self.main_window, self.app)
-        self.main_window.add(self.task_frame, weight=1)
+        self.main_window.add(self.sched_frame, weight=1)
         self.main_window.add(self.graph_view, weight=1)
         self.create_special_buttons()
     
@@ -43,10 +43,16 @@ class WorkState:
     
     def go_back(self):
         self.app.genAlgorithm.go_back()
+        self.sched_frame.update()
+        self.graph_view.update()
     
     def do_next(self):
         self.app.genAlgorithm.do_next()
+        self.sched_frame.update()
+        self.graph_view.update()
     
     def finish(self):
         self.app.genAlgorithm.finish()
+        self.sched_frame.update()
+        self.graph_view.update()
 
