@@ -1,9 +1,8 @@
-from defaultClasses import ScheduleInfo, Task, GenerationState
+from defaultClasses import ScheduleInfo, GenerationState
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from itertools import cycle
 import tkinter as tk
-from tkinter import ttk
 from typing import List
 
 class AverageTardinessGUI:

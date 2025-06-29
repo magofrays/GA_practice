@@ -1,9 +1,7 @@
-from defaultClasses import ScheduleInfo
 from geneticAlgorithm import geneticAlgorithm
 import tkinter as tk
-from tkinter import ttk
 from startState import StartState
-from parser import Parser, RandomParser
+from parser import Parser
 from selection import *
 from crossbreeding import *
 from mutation import *
