@@ -61,17 +61,75 @@ class ScheduleView(ttk.Frame):
     def update(self):
         self.update_gen()
         self.update_sched(self.current_state.best)
-        
-        
+
+
+class ScrollableFrame(ttk.Frame):
+    def __init__(self, container, *args, **kwargs):
+        super().__init__(container, *args, **kwargs)
+        self.setup_scrollable_frame()
+
+    def setup_scrollable_frame(self):
+        self.canvas = tk.Canvas(self)
+        self.scrollbar = ttk.Scrollbar(self, orient="vertical", command=self.canvas.yview)
+        self.scrollable_frame = ttk.Frame(self.canvas)
+
+        self.scrollable_frame.bind(
+            "<Configure>",
+            lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+        )
+
+        self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+        self.canvas.configure(yscrollcommand=self.scrollbar.set)
+
+        self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
+
+        self.canvas.pack(side="left", fill="both", expand=True)
+        self.scrollbar.pack(side="right", fill="y")
+
+    def _on_mousewheel(self, event):
+        self.canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+    
+    def clear(self):
+        """Очищает все содержимое scrollable_frame"""
+        for widget in self.scrollable_frame.winfo_children():
+            widget.destroy()
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))   
+
 
 class ScheduleSelection(ttk.Frame):
-    def __init__(self, parent, app, taskView):
+    def __init__(self, parent, app, scheduleView: ScheduleView):
         super().__init__(parent)
         self.app = app
-        self.taskView = taskView
+        self.schedView = scheduleView
+        self.generationState = self.app.genAlgorithm.generationState
+        self.scrollableFrame = ScrollableFrame(self)
+        self.scrollableFrame.pack(fill="both", expand=True)
+        self.create_sched_list()
+        
+    def create_sched_list(self):
+        for sched in self.generationState.population:
+            self.create_schedule_item(sched)
+            
+    def create_schedule_item(self, sched):
+        """Создает элемент расписания с обработчиком клика"""
+        item_frame = ttk.Frame(self.scrollableFrame.scrollable_frame, relief="solid", padding=5)
+        item_frame.pack(fill="x", pady=2)
+        
+        name_label = ttk.Label(item_frame, text=f"Расписание: {sched.id}", font=("Arial", 12, "bold"))
+        name_label.pack(anchor="w")
+        
+        desc_label = ttk.Label(item_frame, text=f"Задержка: {sched.tardiness}", foreground="gray")
+        desc_label.pack(anchor="w")
+        for widget in [item_frame, name_label, desc_label]:
+            widget.bind("<Button-1>", lambda e, data=sched: self.change_sched_view(data))
     
+    def change_sched_view(self, sched):
+        self.schedView.update_sched(sched)
+        
     def update(self):
-        pass
+        self.scrollableFrame.clear()
+        self.generationState = self.app.genAlgorithm.generationState
+        self.create_sched_list()
         
 
 class ScheduleFrame(ttk.Frame):

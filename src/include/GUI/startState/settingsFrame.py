@@ -83,14 +83,9 @@ class RangeSettingLine(ttk.Frame):
         self.min_val, self.max_val = value_range
         min_default, max_default = default_range
         
-        # Основная метка
         ttk.Label(self, text=label, anchor="w").pack(side=tk.LEFT, padx=10)
-        
-        # Контейнер для элементов управления
         control_frame = ttk.Frame(self)
         control_frame.pack(side=tk.LEFT, fill=tk.X, expand=True)
-        
-        # Создаем элементы для минимального и максимального значений
         self.min_setting = SettingLine(
             control_frame, 
             "Min:", 
@@ -110,8 +105,6 @@ class RangeSettingLine(ttk.Frame):
             var_type
         )
         self.max_setting.pack(fill=tk.X, expand=True)
-        
-        # Связываем события для взаимной валидации
         self.min_setting.value.trace_add("write", self.validate_min)
         self.max_setting.value.trace_add("write", self.validate_max)
     
@@ -138,33 +131,37 @@ class RangeSettingLine(ttk.Frame):
             self.max_setting.value.get()
         )
 
-class SettingsNotebook(ttk.Notebook):
-    def __init__(self, parent, settings_config):
+
+class DropdownSetting(ttk.Frame):
+    def __init__(self, parent, label, options, default=None):
         super().__init__(parent)
-        self.settings = {}
+        self.options = options
+        self.value = tk.StringVar(value=default if default else options[0])
+        main_container = ttk.Frame(self)
+        main_container.pack(fill=tk.X, expand=True)
         
-        for tab_name, settings in settings_config.items():
-            tab = ttk.Frame(self)
-            self.add(tab, text=tab_name)
-            self.create_tab_content(tab, settings)
+        ttk.Label(main_container, text=label, anchor="w").pack(side=tk.LEFT, padx=10)
+        
+        right_container = ttk.Frame(main_container)
+        right_container.pack(side=tk.RIGHT, padx=10)
+        
+        self.dropdown = ttk.Combobox(
+            right_container,
+            textvariable=self.value,
+            values=options,
+            state="readonly",
+            width=15
+        )
+        self.dropdown.pack(side=tk.LEFT, padx=10)
+        
+        if default and default in options:
+            self.value.set(default)
+        else:
+            self.value.set(options[0])
     
-    def create_tab_content(self, tab, settings):
-        container = ttk.Frame(tab)
-        container.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-        for i, (label, min_val, max_val, default, var_type) in enumerate(settings):
-            setting = SettingLine(
-                container, 
-                label, 
-                min_val, 
-                max_val, 
-                default,
-                var_type
-            )
-            setting.pack(fill=tk.X, pady=5)
-            self.settings[label] = setting.value
+    def get_value(self):
+        return self.value.get()
     
-    def get_values(self):
-        return {key: var.get() for key, var in self.settings.items()}
 
 
 class SettingsFrame(ttk.Frame):
@@ -186,13 +183,31 @@ class SettingsFrame(ttk.Frame):
                 ("Seed", 1, 10000, 1337, int),
             ],
         }
+        self.settings_notebook = ttk.Notebook(self)
+        self.settings_notebook.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        self.settings_tabs = {}
+        self.settings = {}
+        for tab_name, settings in self.settings_config.items():
+            tab = ttk.Frame(self)
+            self.settings_notebook.add(tab, text=tab_name)
+            self.create_tab_content(tab, settings)
+            self.settings_tabs[tab_name] = tab
         
-        self.notebook = SettingsNotebook(self, self.settings_config)
-        self.notebook.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        alg_settings = self.settings_tabs["Настройки алгоритма"]
+        selection_type = DropdownSetting(alg_settings, "Тип отбора", ["TournamentSelection", "RankSelection", "StochasticUniversalSampling"], "TournamentSelection")
+        selection_type.pack(anchor="nw", fill=tk.BOTH, pady=5)
+        self.settings["Тип отбора"] = selection_type
+        crossbreeding_type = DropdownSetting(alg_settings, "Тип скрещивания", ["OrderCrossbreeding"], "OrderCrossbreeding")
+        crossbreeding_type.pack(anchor="nw", fill=tk.BOTH, pady=5)
+        self.settings["Тип скрещивания"] = selection_type
+        mutation_type = DropdownSetting(alg_settings, "Тип мутации", ["NoMutation", "SwapMutation", "InversionMutation"], "SwapMutation")
+        mutation_type.pack(anchor="nw", fill=tk.BOTH, pady=5)
+        self.settings["Тип мутации"] = selection_type
+        self.create_buttons()
         
+    def create_buttons(self):
         btn_frame = ttk.Frame(self)
         btn_frame.pack(fill=tk.X, padx=10, pady=10)
-        
         ttk.Button(
             btn_frame, 
             text="Сохранить", 
@@ -205,8 +220,24 @@ class SettingsFrame(ttk.Frame):
             command=self.reset_settings
         ).pack(side=tk.RIGHT, padx=5)
     
+    def create_tab_content(self, tab, settings):
+        for i, (label, min_val, max_val, default, var_type) in enumerate(settings):
+            setting = SettingLine(
+                tab, 
+                label, 
+                min_val, 
+                max_val, 
+                default,
+                var_type
+            )
+            setting.pack(fill=tk.X, pady=5)
+            self.settings[label] = setting
+        
+    def get_values(self):
+        return {key: var.get_value() for key, var in self.settings.items()}
+    
     def save_settings(self):
-        settings = self.notebook.get_values()
+        settings = self.get_values()
         self.app.change_seed(settings["Seed"])
         self.app.change_alg_params(
             settings["Вероятность скрещивания"],
@@ -214,13 +245,17 @@ class SettingsFrame(ttk.Frame):
             settings["Размер популяции"],
             settings["Количество поколений"],
             settings["Размер отбора"])
+        self.app.change_selection_type(settings["Тип отбора"])
+        self.app.change_crossbreeding_type(settings["Тип скрещивания"])
+        self.app.change_mutation_type(settings["Тип мутации"])
         messagebox.showinfo("Настройки", "Настройки успешно сохранены!")
     
     def reset_settings(self):
         for tab_name, settings in self.settings_config.items():
             for setting in settings:
                 key = setting[0]
-                if key in self.notebook.settings:
-                    self.notebook.settings[key].set(setting[3])
-        self.save_settings()
+                if key in self.settings:
+                    self.settings[key].set(setting[3])
         messagebox.showinfo("Настройки", "Настройки сброшены к значениям по умолчанию")
+        self.save_settings()
+        

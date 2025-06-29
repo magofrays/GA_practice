@@ -4,6 +4,10 @@ import tkinter as tk
 from tkinter import ttk
 from startState import StartState
 from parser import Parser, RandomParser
+from selection import *
+from crossbreeding import *
+from mutation import *
+
 import random
 class App:
     def __init__(self):
@@ -25,6 +29,26 @@ class App:
     
     def change_alg_params(self, *args):
         self.genAlgorithm.change_params(*args)
+    
+    def change_selection_type(self, type: str):
+        if type == "TournamentSelection":
+            self.genAlgorithm.selection = TournamentSelection()
+        elif type == "RankSelection":
+            self.genAlgorithm.selection = RankSelection()
+        elif type == "StochasticUniversalSampling":
+            self.genAlgorithm.selection = StochasticUniversalSampling()
+    
+    def change_crossbreeding_type(self, type: str):
+        if type == "OrderCrossbreeding":
+            self.genAlgorithm.crossbreeding = OrderCrossbreeding()
+    
+    def change_mutation_type(self, type: str):
+        if type == "NoMutation":
+            self.genAlgorithm.mutation = NoMutation()
+        elif type == "SwapMutation":
+            self.genAlgorithm.mutation = SwapMutation()
+        elif type == "InversionMutation":
+            self.genAlgorithm.mutation = InversionMutation()
     
     def visual_settings(self):
         self.root.geometry("1200x800")
