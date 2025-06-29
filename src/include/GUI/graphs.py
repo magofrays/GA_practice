@@ -21,12 +21,15 @@ class AverageTardinessGUI:
         self.ax.clear()
         self.ax.set_title("График средних задержек")
         self.ax.set_xlabel("Итерация")
-        self.ax.set_ylabel("Средняя задержка")
+        self.ax.set_ylabel("Задержки")
         self.ax.grid(False)
         x = [element.id for element in self.history]
-        y = [element.average_tardiness for element in self.history]
+        y_mean = [element.average_tardiness for element in self.history]
+        y_best = [element.best.tardiness for element in self.history]
         
-        self.ax.plot(x, y, 'o--', markersize=2, linewidth=1, color='b')
+        self.ax.plot(x, y_mean, 'o--', markersize=2, linewidth=1, color='b', label="Средние задержки")
+        self.ax.plot(x, y_best, 'o--', markersize=2, linewidth=1, color='r', label="Лучшие задержки")
+        self.ax.legend()
         self.canvas.draw()
 
 
