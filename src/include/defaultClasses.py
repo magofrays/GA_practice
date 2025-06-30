@@ -37,7 +37,7 @@ class ParamGeneticAlgorithm:  # параметры ГА
             raise ValueError("Популяция должна быть ≥2, поколения ≥1.")
         if not (0 <= self.crossover <= 1 and 0 <= self.mutation <= 1):
             raise ValueError("Вероятности должны быть в диапазоне [0, 1].")
-        if self.num_individuals < self.num_to_select < 2:
+        if self.num_individuals < self.num_to_select or self.num_to_select < 2:
             raise ValueError("Отбираться должно больше 1 особи и ≤ популяции!")
 
 
