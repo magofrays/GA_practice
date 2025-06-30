@@ -46,7 +46,7 @@ class geneticAlgorithm:
 
     def do_selection(self):
         self.history.append(self.generationState)
-        self.generationState = self.selection.select(self.generationState, self.params.num_individuals)
+        self.generationState = self.selection.select(self.generationState, self.params.num_to_select)
 
     def do_crossbreeding(self):
         self.history.append(self.generationState)
