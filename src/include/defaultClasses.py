@@ -25,7 +25,7 @@ class Task:
 class ParamGeneticAlgorithm:  # параметры ГА
     crossover: float = 0.5          # Вероятность скрещивания (0-1)
     mutation: float = 0.5           # Вероятность мутации (0-1)
-    num_individuals: int = 150      # Размер популяции (≥2)
+    num_individuals: int = 100     # Размер популяции (≥2)
     num_generations: int = 100      # Количество поколений (≥1)
     num_to_select : int = 50
     def __post_init__(self):
