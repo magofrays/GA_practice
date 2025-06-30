@@ -7,28 +7,17 @@ class SettingLine(ttk.Frame):
         self.var_type = var_type
         self.min_val = min_val
         self.max_val = max_val
-        
         if var_type == int:
             self.value = tk.IntVar(value=default)
         else:
             self.value = tk.DoubleVar(value=default)
-        
-        # Главный контейнер для выравнивания
         main_container = ttk.Frame(self)
         main_container.pack(fill=tk.X, expand=True)
-        
-        # Метка слева
         ttk.Label(main_container, text=label, anchor="w").pack(side=tk.LEFT, padx=10)
-        
-        # Контейнер для правой части (поле + слайдер)
         right_container = ttk.Frame(main_container)
         right_container.pack(side=tk.RIGHT, padx=10)
-        
-        # Поле ввода
         self.entry = ttk.Entry(right_container, width=8, textvariable=self.value)
         self.entry.pack(side=tk.LEFT, padx=(0, 10))
-        
-        # Контейнер для слайдера с фиксированной шириной
         slider_container = ttk.Frame(right_container, width=200)
         slider_container.pack_propagate(False)
         slider_container.pack(side=tk.RIGHT, fill=tk.BOTH)
@@ -41,8 +30,6 @@ class SettingLine(ttk.Frame):
             command=self.update_from_slider,
         )
         self.slider.pack(fill=tk.X, expand=True)
-        
-        # Привязка событий
         self.entry.bind("<FocusOut>", self.validate_entry)
         self.entry.bind("<Return>", self.validate_entry)
         self.value.trace_add("write", self.update_slider)
@@ -139,12 +126,9 @@ class DropdownSetting(ttk.Frame):
         self.value = tk.StringVar(value=default if default else options[0])
         main_container = ttk.Frame(self)
         main_container.pack(fill=tk.X, expand=True)
-        
         ttk.Label(main_container, text=label, anchor="w").pack(side=tk.LEFT, padx=10)
-        
         right_container = ttk.Frame(main_container)
         right_container.pack(side=tk.RIGHT, padx=10)
-        
         self.dropdown = ttk.Combobox(
             right_container,
             textvariable=self.value,
@@ -153,7 +137,6 @@ class DropdownSetting(ttk.Frame):
             width=15
         )
         self.dropdown.pack(side=tk.LEFT, padx=10)
-        
         if default and default in options:
             self.value.set(default)
         else:
@@ -162,8 +145,6 @@ class DropdownSetting(ttk.Frame):
     def get_value(self):
         return self.value.get()
     
-
-
 class SettingsFrame(ttk.Frame):
     def __init__(self, parent, app):
         super().__init__(parent)

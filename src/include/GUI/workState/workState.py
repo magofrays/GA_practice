@@ -39,7 +39,16 @@ class WorkState:
             command=self.go_back
         ).pack(side=tk.RIGHT, padx=5)
         
+        ttk.Button(
+            button_frame, 
+            text="В начало", 
+            command=self.go_to_start
+        ).pack(side=tk.RIGHT, padx=5)
         
+    def go_to_start(self):
+        from startState import StartState
+        self.app.genAlgorithm.go_to_start()
+        self.app.change_state(StartState(self.root, self.app))
     
     def go_back(self):
         self.app.genAlgorithm.go_back()

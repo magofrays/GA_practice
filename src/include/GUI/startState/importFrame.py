@@ -52,7 +52,7 @@ class ImportFrame(ttk.Frame):
             self.app.change_parser(Parser())
             self.file_path_var.set(file_path)
             file_path = self.file_path_var.get()
-            tasks = self.app.add_tasks(file_path)
+            self.app.add_tasks(file_path)
             self.startState.update_graph()
             
 
@@ -103,8 +103,6 @@ class ImportFrame(ttk.Frame):
                 self.deadline_range.get_range())
         self.startState.update_graph()
         
-        
-    
     def read_input(self):
         self.app.change_parser(Parser())
         info = self.text_area.get("1.0", tk.END)

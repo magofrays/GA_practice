@@ -14,6 +14,7 @@ class geneticAlgorithm:
         self.mutation: MutationStrategy = SwapMutation()
         self.generationState: GenerationState = None
         self.history: list[GenerationState] = []
+        self.tasks = []
 
     def set_tasks(self, tasks):
         self.tasks = tasks
@@ -79,6 +80,12 @@ class geneticAlgorithm:
             # отмечаем новое поколение и сразу стартуем отбор, если надо
             if self.iteration < self.params.num_generations:
                 self.do_selection()
+
+    def go_to_start(self):
+        if self.history:
+            self.iteration = 0
+            self.generationState = self.history[0]
+            self.history = []
 
     def go_back(self):
         if not self.history:

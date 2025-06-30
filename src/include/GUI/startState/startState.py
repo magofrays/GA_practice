@@ -3,7 +3,6 @@ from tkinter import ttk, filedialog, messagebox, scrolledtext
 from graphs import ImportTasksGUI
 from settingsFrame import SettingsFrame
 from importFrame import ImportFrame
-from workState import WorkState
 
 class StartState:
     def __init__(self, root, app):
@@ -25,7 +24,7 @@ class StartState:
     
     def create_graph(self):
         self.graph_container = ttk.Frame(self.main_window)
-        self.graph = ImportTasksGUI(self.graph_container, [])
+        self.graph = ImportTasksGUI(self.graph_container, self.app.genAlgorithm.tasks)
         self.main_window.add(self.graph_container, weight=1)
     
     def update_graph(self):
@@ -46,7 +45,7 @@ class StartState:
         ).pack(side=tk.RIGHT, padx=5)
 
     def end(self):
-        print("Готово")
+        from workState import WorkState
         self.app.genAlgorithm.create_individuals()
         self.app.change_state(WorkState(self.root, self.app))
         
