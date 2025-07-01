@@ -51,7 +51,7 @@ class App:
             self.genAlgorithm.mutation = InversionMutation()
 
     def visual_settings(self):
-        self.root.geometry("1200x800")
+        self.root.geometry("1200x1000")
         self.root.title("Генетический алгоритм")
 
     def run(self):

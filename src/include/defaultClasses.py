@@ -19,6 +19,10 @@ class Task:
     def _validate(self):
         if self.time < 0 or self.deadline < 0:
             raise ValueError("Число времени и дедлайна должно быть неотрицательным.")
+    
+    @staticmethod
+    def reset_id():
+        Task._next_id = 0
 
 
 @dataclass

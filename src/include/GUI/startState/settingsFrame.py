@@ -1,5 +1,6 @@
 import ttkbootstrap as ttkb
 from ttkbootstrap.dialogs import Messagebox
+from tkinter import messagebox
 
 
 class SettingLine(ttkb.Frame):
@@ -135,6 +136,7 @@ class DropdownSetting(ttkb.Frame):
 class SettingsFrame(ttkb.Frame):
     def __init__(self, parent, app):
         super().__init__(parent)
+        self.parent = parent
         self.app = app
         self.header = ttkb.Label(self, text="Настройки приложения", font=("Arial", 12, "bold"))
         self.header.pack(pady=(0, 10), anchor="center")
@@ -205,15 +207,13 @@ class SettingsFrame(ttkb.Frame):
         self.app.change_selection_type(settings["Тип отбора"])
         self.app.change_crossbreeding_type(settings["Тип скрещивания"])
         self.app.change_mutation_type(settings["Тип мутации"])
-        # messagebox.showinfo("Настройки", "Настройки успешно сохранены!")
-        Messagebox.ok("Настройки успешно сохранены!", "Настройки")
+        messagebox.showinfo("Настройки", "Настройки сброшены к значениям по умолчанию")
 
     def reset_settings(self):
         for tab_name, settings in self.settings_config.items():
             for setting in settings:
                 key = setting[0]
                 if key in self.settings:
-                    self.settings[key].set(setting[3])
-        # messagebox.showinfo("Настройки", "Настройки сброшены к значениям по умолчанию")
-        Messagebox.ok("Настройки сброшены к значениям по умолчанию", "Настройки")
+                    self.settings[key].value.set(setting[3])
+        messagebox.showinfo("Настройки", "Настройки сброшены к значениям по умолчанию")
         self.save_settings()
