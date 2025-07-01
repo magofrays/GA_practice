@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk, filedialog, messagebox, scrolledtext
 from graphs import ScheduleInfoGUI
 from defaultClasses import State
+import ttkbootstrap as ttkb
 
 class ScheduleView(ttk.Frame):
     def __init__(self, parent, app):
@@ -11,6 +12,7 @@ class ScheduleView(ttk.Frame):
         self.schedule = self.current_state.best
         self.create_gen_info()
         self.create_sched_info()
+        self.create_buttons()
     
     def get_type(self, state : State):
         if state == State.SELECTION:
@@ -61,7 +63,20 @@ class ScheduleView(ttk.Frame):
     def update(self):
         self.update_gen()
         self.update_sched(self.current_state.best)
+    
+    def create_buttons(self):
+        ttkb.Button(self.sched_info, text="Лучшее в поколении", command=self.best_gen_sched, bootstyle="info").pack(side=ttkb.RIGHT,
+                                                                                                       padx=5)
+        ttkb.Button(self.sched_info, text="Лучшее расписание", command=self.best_sched, bootstyle="info").pack(
+            side=ttkb.RIGHT, padx=5)
 
+    def best_gen_sched(self):
+        sched = self.current_state.best
+        self.update_sched(sched)
+
+    def best_sched(self):
+        sched = self.app.genAlgorithm.get_best()
+        self.update_sched(sched)
 
 class ScrollableFrame(ttk.Frame):
     def __init__(self, container, *args, **kwargs):
@@ -69,35 +84,58 @@ class ScrollableFrame(ttk.Frame):
         self.setup_scrollable_frame()
 
     def setup_scrollable_frame(self):
-        self.canvas = tk.Canvas(self)
+        self.canvas = tk.Canvas(self, highlightthickness=0)
         self.scrollbar = ttk.Scrollbar(self, orient="vertical", command=self.canvas.yview)
         self.scrollable_frame = ttk.Frame(self.canvas)
-
+        
+        self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw", tags="frame")
+        self.canvas.configure(yscrollcommand=self.scrollbar.set)
+        
+        # ИСПРАВЛЕННАЯ ЧАСТЬ:
         self.scrollable_frame.bind(
             "<Configure>",
             lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all"))
         )
-
-        self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
-        self.canvas.configure(yscrollcommand=self.scrollbar.set)
-
-        self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
-
+        
+        self.canvas.bind("<Enter>", self._bind_mousewheel)
+        self.canvas.bind("<Leave>", self._unbind_mousewheel)
         self.canvas.pack(side="left", fill="both", expand=True)
         self.scrollbar.pack(side="right", fill="y")
 
+    def _bind_mousewheel(self, event):
+        self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
+        self.canvas.bind_all("<Button-4>", self._on_mousewheel)
+        self.canvas.bind_all("<Button-5>", self._on_mousewheel)
+
+    def _unbind_mousewheel(self, event):
+        self.canvas.unbind_all("<MouseWheel>")
+        self.canvas.unbind_all("<Button-4>")
+        self.canvas.unbind_all("<Button-5>")
+
     def _on_mousewheel(self, event):
-        self.canvas.yview_scroll(int(-1*(event.delta/120)), "units")
-    
+        if event.num == 4 or event.delta > 0:
+            self.canvas.yview_scroll(-1, "units")
+        elif event.num == 5 or event.delta < 0:
+            self.canvas.yview_scroll(1, "units")
+        return "break"
+
     def clear(self):
-        """Очищает все содержимое scrollable_frame"""
         for widget in self.scrollable_frame.winfo_children():
             widget.destroy()
-        self.canvas.configure(scrollregion=self.canvas.bbox("all"))   
+        # Принудительное обновление после очистки
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
 
 
 class ScheduleSelection(ttk.Frame):
     def __init__(self, parent, app, scheduleView: ScheduleView):
+        self.style = ttk.Style()
+    
+        # Настройка стилей (фон, текст и т.д.)
+        self.style.configure("a.TFrame", background="#9392e4")
+        self.style.configure("a.TLabel", background="#9392e4", foreground="#2623bb")  # тот же фон
+        
+        self.style.configure("b.TFrame", background="#3432c9")  # светло-зелёный
+        self.style.configure("b.TLabel", background="#3432c9", foreground="#000000")  # тот же
         super().__init__(parent)
         self.app = app
         self.schedView = scheduleView
@@ -111,17 +149,36 @@ class ScheduleSelection(ttk.Frame):
             self.create_schedule_item(sched)
             
     def create_schedule_item(self, sched):
-        """Создает элемент расписания с обработчиком клика"""
-        item_frame = ttk.Frame(self.scrollableFrame.scrollable_frame, relief="solid", padding=5)
-        item_frame.pack(fill="x", pady=2)
-        
-        name_label = ttk.Label(item_frame, text=f"Расписание: {sched.id}", font=("Arial", 12, "bold"))
+        """Создает интерактивный элемент расписания"""
+        item_frame = ttk.Frame(
+            self.scrollableFrame.scrollable_frame,
+            padding=5,
+            relief="solid",
+            borderwidth=1,
+        )
+        item_frame.pack(fill="x", pady=2, padx=2)
+        item_frame.configure(style='a.TFrame')
+        name_label = ttk.Label(item_frame, text=f"Расписание: {sched.id}")
         name_label.pack(anchor="w")
-        
-        desc_label = ttk.Label(item_frame, text=f"Задержка: {sched.tardiness}", foreground="gray")
+        name_label.configure(style="a.TLabel")
+        desc_label = ttk.Label(item_frame, text=f"Задержка: {sched.tardiness}")
         desc_label.pack(anchor="w")
-        for widget in [item_frame, name_label, desc_label]:
-            widget.bind("<Button-1>", lambda e, data=sched: self.change_sched_view(data))
+        desc_label.configure(style="a.TLabel")
+        self.style = ttk.Style()
+        item_frame.bind("<Enter>", lambda e: self.change_styles(item_frame, name_label, desc_label, True))
+        item_frame.bind("<Leave>", lambda e: self.change_styles(item_frame, name_label, desc_label, False))
+        item_frame.bind("<Button-1>", lambda e, data=sched: self.change_sched_view(data))
+    
+    def change_styles(self, frame, name, desc, hower):
+        if hower:
+            frame.configure(style='b.TFrame')
+            name.configure(style="b.TLabel")
+            desc.configure(style="b.TLabel")
+        else:
+            frame.configure(style='a.TFrame')
+            name.configure(style="a.TLabel")
+            desc.configure(style="a.TLabel")
+        
     
     def change_sched_view(self, sched):
         self.schedView.update_sched(sched)
@@ -139,13 +196,13 @@ class ScheduleFrame(ttk.Frame):
         self.notebook = ttk.Notebook(self)
         self.notebook.pack(fill=tk.BOTH, expand=True)
         self.schedule_view = ScheduleView(self.notebook, self.app)
-        self.schedule_selection = ScheduleSelection(self.notebook, self.app, self.schedule_view)
+        # self.schedule_selection = ScheduleSelection(self.notebook, self.app, self.schedule_view)
         self.notebook.add(self.schedule_view, text="Просмотр расписания")
-        self.notebook.add(self.schedule_selection, text="Выбор расписания для просмотра")
+        # self.notebook.add(self.schedule_selection, text="Выбор расписания для просмотра")
     
     def update(self):
         self.schedule_view.update()
-        self.schedule_selection.update()
+        # self.schedule_selection.update()
     
     
     

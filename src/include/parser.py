@@ -20,6 +20,7 @@ class Parser:
 
     @staticmethod
     def get_tasks(source: str) -> list[Task]:
+        Task.reset_id()
         if os.path.exists(source) and os.path.isfile(source):
             lines = open(source, 'r', encoding='utf-8').read().splitlines()
         else:
@@ -62,6 +63,7 @@ class RandomParser:
         min_d, max_d = deadline_range
         if not (0 <= min_t <= max_t and 0 <= min_d <= max_d):
             raise ValueError("Неправильный диапазон времени/дедлайна")
+        Task.reset_id()
         tasks: list[Task] = []
         for _ in range(n):
             time = random.randint(min_t, max_t)
