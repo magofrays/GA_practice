@@ -45,7 +45,11 @@ class StartState:
         ).pack(side=tk.RIGHT, padx=5)
 
     def end(self):
-        from workState import WorkState
-        self.app.genAlgorithm.create_individuals()
-        self.app.change_state(WorkState(self.root, self.app))
+        try:
+            from workState import WorkState
+            self.app.genAlgorithm.create_individuals()
+            self.app.change_state(WorkState(self.root, self.app))
+        except Exception as e:
+            message = str(e)
+            self.app.show_error(message)
         

@@ -1,6 +1,7 @@
 import ttkbootstrap as ttkb
 from ttkbootstrap.dialogs import Messagebox
 from tkinter import messagebox
+from defaultClasses import ParamGeneticAlgorithm
 
 
 class SettingLine(ttkb.Frame):
@@ -140,22 +141,12 @@ class SettingsFrame(ttkb.Frame):
         self.app = app
         self.header = ttkb.Label(self, text="Настройки приложения", font=("Arial", 12, "bold"))
         self.header.pack(pady=(0, 10), anchor="center")
-        self.settings_config = {
-            "Настройки алгоритма": [
-                ("Размер популяции", 10, 500, 100, int),
-                ("Количество поколений", 10, 1000, 100, int),
-                ("Размер отбора", 10, 100, 50, int),
-                ("Вероятность мутации", 0.0, 1.0, 0.5, float),
-                ("Вероятность скрещивания", 0.0, 1.0, 0.5, float),
-            ],
-            "Настройки генерации": [
-                ("Seed", 1, 10000, 1337, int),
-            ],
-        }
         self.settings_notebook = ttkb.Notebook(self)
         self.settings_notebook.pack(fill=ttkb.BOTH, expand=True, padx=5, pady=5)
+        self.create_config()
         self.settings_tabs = {}
         self.settings = {}
+        
         for tab_name, settings in self.settings_config.items():
             tab = ttkb.Frame(self)
             self.settings_notebook.add(tab, text=tab_name)
@@ -165,19 +156,40 @@ class SettingsFrame(ttkb.Frame):
         alg_settings = self.settings_tabs["Настройки алгоритма"]
         selection_type = DropdownSetting(alg_settings, "Тип отбора",
                                          ["TournamentSelection", "RankSelection", "StochasticUniversalSampling"],
-                                         "TournamentSelection")
+                                         self.app.selection_type)
         selection_type.pack(anchor="nw", fill=ttkb.BOTH, pady=5)
         self.settings["Тип отбора"] = selection_type
         crossbreeding_type = DropdownSetting(alg_settings, "Тип скрещивания", ["OrderCrossbreeding"],
-                                             "OrderCrossbreeding")
+                                             self.app.crossbreeding_type)
         crossbreeding_type.pack(anchor="nw", fill=ttkb.BOTH, pady=5)
-        self.settings["Тип скрещивания"] = crossbreeding_type  # БЫЛА ОШИБКА, исправил
+        self.settings["Тип скрещивания"] = crossbreeding_type
         mutation_type = DropdownSetting(alg_settings, "Тип мутации",
-                                        ["NoMutation", "SwapMutation", "InversionMutation"], "SwapMutation")
+                                        ["NoMutation", "SwapMutation", "InversionMutation"], self.app.mutation_type)
         mutation_type.pack(anchor="nw", fill=ttkb.BOTH, pady=5)
-        self.settings["Тип мутации"] = mutation_type  # БЫЛА ОШИБКА, исправил
+        self.settings["Тип мутации"] = mutation_type 
+        extra_settings = self.settings_tabs["Дополнительные настройки"]
+        theme_type = DropdownSetting(extra_settings, "Тема приложения", 
+        ["cosmo", "flatly", "journal", "litera", "lumen", "minty", 
+        "pulse", "sandstone", "united", "yeti", "morph", "simplex", 
+        "cerculean", "darkly", "solar", "superhero", "cyborg", "vapor"], self.app.current_theme)
+        theme_type.pack(anchor="nw", fill=ttkb.BOTH, pady=5)
+        self.settings["Тема приложения"] = theme_type
         self.create_buttons()
 
+    def create_config(self):
+        self.settings_config = {
+            "Настройки алгоритма": [
+                ("Размер популяции", 10, 500, self.app.genAlgorithm.params.num_individuals, int),
+                ("Количество поколений", 10, 1000, self.app.genAlgorithm.params.num_generations, int),
+                ("Размер отбора", 10, 100, self.app.genAlgorithm.params.num_to_select, int),
+                ("Вероятность мутации", 0.0, 1.0, self.app.genAlgorithm.params.mutation, float),
+                ("Вероятность скрещивания", 0.0, 1.0, self.app.genAlgorithm.params.crossover, float),
+            ],
+            "Дополнительные настройки": [
+                ("Seed", 1, 10000, 1337, int),
+            ],
+        }
+    
     def create_buttons(self):
         btn_frame = ttkb.Frame(self)
         btn_frame.pack(fill=ttkb.X, padx=10, pady=10)
@@ -207,13 +219,21 @@ class SettingsFrame(ttkb.Frame):
         self.app.change_selection_type(settings["Тип отбора"])
         self.app.change_crossbreeding_type(settings["Тип скрещивания"])
         self.app.change_mutation_type(settings["Тип мутации"])
-        messagebox.showinfo("Настройки", "Настройки сброшены к значениям по умолчанию")
+        self.app.change_theme(settings["Тема приложения"])
+        messagebox.showinfo("Настройки", "Настройки сохранены!")
 
     def reset_settings(self):
+        self.app.genAlgorithm.params = ParamGeneticAlgorithm()
+        self.app.change_crossbreeding_type("TournamentSelection")
+        self.settings["Тип скрещивания"].value.set("TournamentSelection")
+        self.app.change_selection_type("OrderCrossbreeding")
+        self.settings["Тип отбора"].value.set("OrderCrossbreeding")
+        self.app.change_mutation_type("SwapMutation")
+        self.settings["Тип мутации"].value.set("SwapMutation")
+        self.create_config()
         for tab_name, settings in self.settings_config.items():
             for setting in settings:
                 key = setting[0]
                 if key in self.settings:
                     self.settings[key].value.set(setting[3])
         messagebox.showinfo("Настройки", "Настройки сброшены к значениям по умолчанию")
-        self.save_settings()

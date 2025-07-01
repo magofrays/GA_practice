@@ -37,14 +37,22 @@ class WorkState:
         self.app.change_state(StartState(self.root, self.app))
     
     def go_back(self):
-        self.app.genAlgorithm.go_back()
-        self.sched_frame.update()
-        self.graph_view.update()
+        try:
+            self.app.genAlgorithm.go_back()
+            self.sched_frame.update()
+            self.graph_view.update()
+        except Exception as e:
+            message = str(e)
+            self.app.show_error(message)
     
     def do_next(self):
-        self.app.genAlgorithm.do_next()
-        self.sched_frame.update()
-        self.graph_view.update()
+        try:
+            self.app.genAlgorithm.do_next()
+            self.sched_frame.update()
+            self.graph_view.update()
+        except Exception as e:
+            message = str(e)
+            self.app.show_error(message)
     
     def finish(self):
         self.app.genAlgorithm.finish()

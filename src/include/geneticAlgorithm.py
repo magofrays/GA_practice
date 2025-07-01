@@ -28,6 +28,8 @@ class geneticAlgorithm:
         self.params._validate()
 
     def create_individuals(self):
+        if len(self.tasks) == 0:
+            raise ValueError("Не заданы задачи, для которых алгоритм ищет решение!")
         population = []
         for _ in range(self.params.num_individuals):
             order = list(range(len(self.tasks)))
@@ -80,11 +82,14 @@ class geneticAlgorithm:
             # отмечаем новое поколение и сразу стартуем отбор, если надо
             if self.iteration < self.params.num_generations:
                 self.do_selection()
+            else:
+                raise ValueError("Невозможно идти вперед: алгоритм закончил свою работу!")
 
     def go_to_start(self):
+        ScheduleInfo.reset_id()
+        self.generationState = None
         if self.history:
             self.iteration = 0
-            self.generationState = self.history[0]
             self.history = []
 
     def go_back(self):
@@ -104,7 +109,7 @@ class geneticAlgorithm:
 
     def get_best(self) -> ScheduleInfo:
         if not self.history:
-            return None
+            return self.generationState.best
 
         # Находим поколение с минимальной задержкой у лучшей особи
         best_generation = min(self.history, key=lambda gen: gen.best.tardiness)

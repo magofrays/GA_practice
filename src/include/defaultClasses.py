@@ -66,6 +66,10 @@ class ScheduleInfo:  # класс, представляющий конкретн
 
     def copy(self):
         return ScheduleInfo(self.order, self.tasks)
+    
+    @staticmethod
+    def reset_id():
+        ScheduleInfo._next_id = 0
 
 class State:
     SELECTION = 0
@@ -89,3 +93,4 @@ class GenerationState:  # состояние одного поколения
         self.average_tardiness = total / len(self.population)  # средняя задержка по популяции
         self.id = GenerationState._next_id
         GenerationState._next_id += 1
+    
