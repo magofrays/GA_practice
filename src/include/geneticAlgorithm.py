@@ -36,6 +36,7 @@ class geneticAlgorithm:
             random.shuffle(order)
             population.append(ScheduleInfo(order, self.tasks))
         self.generationState = GenerationState(population, State.INIT)
+        self.history.append(self.generationState)
 
     def change_selection(self, new_selection):
         self.selection = new_selection
@@ -47,11 +48,9 @@ class geneticAlgorithm:
         self.mutation = new_mutation
 
     def do_selection(self):
-        self.history.append(self.generationState)
         self.generationState = self.selection.select(self.generationState, self.params.num_to_select)
 
     def do_crossbreeding(self):
-        self.history.append(self.generationState)
         self.generationState = self.crossbreeding.crossbreed(
             self.generationState,
             self.params.num_individuals,
@@ -59,7 +58,6 @@ class geneticAlgorithm:
         )
 
     def do_mutation(self):
-        self.history.append(self.generationState)
         self.generationState = self.mutation.mutate(
             self.generationState,
             self.params.mutation
@@ -84,6 +82,7 @@ class geneticAlgorithm:
                 self.do_selection()
             else:
                 raise ValueError("Невозможно идти вперед: алгоритм закончил свою работу!")
+        self.history.append(self.generationState)
 
     def go_to_start(self):
         ScheduleInfo.reset_id()
@@ -93,9 +92,10 @@ class geneticAlgorithm:
             self.history = []
 
     def go_back(self):
-        if not self.history:
-            raise ValueError("Невозможно вернуться назад: история пуста")
-        prev = self.history.pop()
+        if len(self.history) == 1:
+            raise ValueError("Невозможно вернуться назад: алгоритм только начал работу!")
+        self.history.pop()
+        prev = self.history[-1]
         if prev.state == State.MUTATION:
             self.iteration -= 1
         self.generationState = prev

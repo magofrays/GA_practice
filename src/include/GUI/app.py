@@ -81,6 +81,7 @@ class App:
             widget.destroy()
 
     def change_state(self, state):
+        self.genAlgorithm.iteration = 0
         self.clear_state()
         self.state = state
         self.state.run()

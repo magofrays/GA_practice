@@ -33,6 +33,7 @@ class WorkState:
         
     def go_to_start(self):
         from startState import StartState
+        self.app.genAlgorithm.history = []
         self.app.genAlgorithm.go_to_start()
         self.app.change_state(StartState(self.root, self.app))
     

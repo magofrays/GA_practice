@@ -23,7 +23,7 @@ class AverageTardinessGUI:
         self.ax.set_xlabel("Итерация")
         self.ax.set_ylabel("Задержки")
         self.ax.grid(False)
-        x = [element.id for element in self.history]
+        x = [i for i in range(len(self.history))]
         y_mean = [element.average_tardiness for element in self.history]
         y_best = [element.best.tardiness for element in self.history]
 
