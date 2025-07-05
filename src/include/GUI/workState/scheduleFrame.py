@@ -12,8 +12,8 @@ class ScheduleView(ttk.Frame):
         self.schedule = self.current_state.best
         self.create_gen_info()
         self.create_sched_info()
-        self.create_buttons()
-    
+        self.create_graph()
+
     def get_type(self, state : State):
         if state == State.SELECTION:
             return "Отбор"
@@ -24,29 +24,38 @@ class ScheduleView(ttk.Frame):
         elif state == State.INIT:
             return "Создание"
     
+    def create_graph(self):
+        self.graph_container = ttk.Frame(self)
+        self.graph_container.pack(fill=tk.BOTH, expand=True)
+        self.graph = ScheduleInfoGUI(self.current_state.best, self.graph_container)
+        ttkb.Button(self.graph_container, text="Лучшее в поколении", command=self.best_gen_sched, bootstyle="info").pack(side=ttkb.RIGHT,
+                                                                                                       padx=5)
+        ttkb.Button(self.graph_container, text="Лучшее расписание", command=self.best_sched, bootstyle="info").pack(
+            side=ttkb.RIGHT, padx=5)
+    
     def create_gen_info(self):
         self.gen_info = ttk.Frame(self)
-        self.gen_info.pack(fill=tk.BOTH, expand=True)
+        self.gen_info.pack(fill=tk.X)
         self.gen_type = ttk.Label(self.gen_info, text=f"Тип: {self.get_type(self.current_state.state)}",
                            font = ("Arial", 12, "bold"))
-        self.gen_type.pack(pady=10, padx=10, anchor="nw")
+        self.gen_type.pack(pady=10, padx=10, anchor="nw", side='left')
         self.gen_tardiness = ttk.Label(self.gen_info, text=f"Средняя задержка: {round(self.current_state.average_tardiness, 2)}",
                                 font = ("Arial", 12, "bold"))
-        self.gen_tardiness.pack(pady=10, padx=10, anchor="nw")
+        self.gen_tardiness.pack(pady=10, padx=10, anchor="nw", side='left')
         self.gen_size = ttk.Label(self.gen_info, text=f"Количество особей: {len(self.current_state.population)}",
                                 font = ("Arial", 12, "bold"))
-        self.gen_size.pack(pady=10, padx=10, anchor="nw")
+        self.gen_size.pack(pady=10, padx=10, anchor="nw", side='left')
     
     def create_sched_info(self):
         self.sched_info = ttk.Frame(self)
-        self.sched_info.pack(fill=tk.BOTH, expand=True)
-        self.graph = ScheduleInfoGUI(self.current_state.best, self.sched_info)
+        self.sched_info.pack(fill=tk.X)
+        
         self.sched_id = ttk.Label(self.sched_info, text=f"ID расписания: {self.schedule.id}",
                            font = ("Arial", 12, "bold"))
-        self.sched_id.pack(pady=10, padx=10, anchor="nw")
+        self.sched_id.pack(pady=10, padx=10, anchor="nw", side='left')
         self.sched_tardiness = ttk.Label(self.sched_info, text=f"Задержки расписания: {round(self.schedule.tardiness, 2)}",
                            font = ("Arial", 12, "bold"))
-        self.sched_tardiness.pack(pady=10, padx=10, anchor="nw")
+        self.sched_tardiness.pack(pady=10, padx=10, anchor="nw", side='left')
     
     def update_gen(self):
         self.current_state = self.app.genAlgorithm.generationState
@@ -63,12 +72,6 @@ class ScheduleView(ttk.Frame):
     def update(self):
         self.update_gen()
         self.update_sched(self.current_state.best)
-    
-    def create_buttons(self):
-        ttkb.Button(self.sched_info, text="Лучшее в поколении", command=self.best_gen_sched, bootstyle="info").pack(side=ttkb.RIGHT,
-                                                                                                       padx=5)
-        ttkb.Button(self.sched_info, text="Лучшее расписание", command=self.best_sched, bootstyle="info").pack(
-            side=ttkb.RIGHT, padx=5)
 
     def best_gen_sched(self):
         sched = self.current_state.best

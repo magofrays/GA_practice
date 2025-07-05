@@ -30,6 +30,7 @@ class AverageTardinessGUI:
         self.ax.plot(x, y_mean, 'o--', markersize=2, linewidth=1, color='b', label="Средние задержки")
         self.ax.plot(x, y_best, 'o--', markersize=2, linewidth=1, color='r', label="Лучшие задержки")
         self.ax.legend()
+        self.fig.set_constrained_layout(True)
         self.canvas.draw()
 
 
@@ -191,7 +192,7 @@ class ImportTasksGUI:
             self.ax.set_yticklabels(final_labels, fontsize=8)
             self.ax.set_ylim(-1, num_active_tasks)
 
-        self.fig.tight_layout()
+        self.fig.set_constrained_layout(True)
         self.canvas.draw()
 
     def update_tasks(self, new_tasks):

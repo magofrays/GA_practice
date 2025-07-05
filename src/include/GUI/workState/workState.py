@@ -1,4 +1,5 @@
 import ttkbootstrap as ttkb
+import tkinter as tk
 from scheduleFrame import ScheduleFrame
 from graphView import GraphView
 
@@ -9,12 +10,12 @@ class WorkState:
         self.root = root
 
     def run(self):
-        self.main_window = ttkb.PanedWindow(self.root, orient=ttkb.HORIZONTAL)
+        self.main_window = ttkb.PanedWindow(self.root, orient=ttkb.VERTICAL)
         self.main_window.pack(fill=ttkb.BOTH, expand=True)
         self.sched_frame = ScheduleFrame(self.main_window, self.app)
         self.graph_view = GraphView(self.main_window, self.app)
         self.main_window.add(self.sched_frame, weight=1)
-        self.main_window.add(self.graph_view, weight=1)
+        self.main_window.add(self.graph_view, weight=30)
         self.create_special_buttons()
 
     def create_special_buttons(self):
